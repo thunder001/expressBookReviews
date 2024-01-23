@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
-let users = [];
+let users = [{"username": "Tony Yang", "password": "1234"}];
 
 const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
@@ -33,7 +33,7 @@ regd_users.post("/login", (req,res) => {
     if (authenticatedUser(username,password)) {
       let accessToken = jwt.sign({
         data: password
-      }, 'access', { expiresIn: 60 * 60 });
+      }, 'access', { expiresIn: 600 * 60 });
   
       req.session.authorization = {
         accessToken,username
@@ -46,10 +46,21 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let isbn = req.params.isbn;
+  let reviews = books[isbn]["reviews"];
+  let user = req.session.authorization["username"];
+  let review = req.query.review;
+  reviews[user] = review;
+  return res.status(300).json(reviews);
 });
 
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    let isbn = req.params.isbn;
+    let reviews = books[isbn]["reviews"];
+    let user = req.session.authorization["username"];
+    
+});
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
