@@ -59,7 +59,10 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
     let isbn = req.params.isbn;
     let reviews = books[isbn]["reviews"];
     let user = req.session.authorization["username"];
-    
+    if (reviews.hasOwnProperty(user)) {
+        delete reviews[user];
+        return res.status(208).json({message: "Review deleted!"});
+    }
 });
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
