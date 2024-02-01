@@ -33,44 +33,57 @@ public_users.post("/register", (req,res) => {
 })
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-    res.send(JSON.stringify({books}, null, 4));
+    allpromise = new Promise((resolve) => resolve(books));
+    allpromise.then(value => res.send(JSON.stringify({value}, null, 4)));
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-  let isbn = req.params.isbn;
-  let book = books[isbn];
-  res.send(JSON.stringify(book, null, 4));
+  isbnpromise = new Promise((resolve, reject) => {
+    let isbn = req.params.isbn;
+    let book = books[isbn];
+    resolve(book);
+  });
+  
+  isbnpromise.then(value => res.send(JSON.stringify(value, null, 4)));
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-   let books_by_author = [];
-   let isbns = Object.keys(books);
-   let author = req.params.author;
+   authorpromise = new Promise((resolve, reject) => {
+    let books_by_author = [];
+    let isbns = Object.keys(books);
+    let author = req.params.author;
+    
+    for (let isbn of isbns) {
+     let book = books[isbn];
+     if (book["author"] == author) {
+         books_by_author.push(book);
+     }
+    };
+    resolve(books_by_author);
+   });
    
-   for (let isbn of isbns) {
-    let book = books[isbn];
-    if (book["author"] == author) {
-        books_by_author.push(book);
-    }
-   };
-   res.send(JSON.stringify(books_by_author, null, 4))
+   authorpromise.then(value => res.send(JSON.stringify(value, null, 4))); 
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-    let books_by_title = {};
-    let isbns = Object.keys(books);
-    let title = req.params.title;
+    titlepromise = new Promise(() => {
+        let books_by_title = {};
+        let isbns = Object.keys(books);
+        let title = req.params.title;
+        
+        for (let isbn of isbns) {
+         let book = books[isbn];
+         if (book["title"] == title) {
+             books_by_title[isbn] = book;
+         }
+        };
+        resolve(books_by_title);
+    });
     
-    for (let isbn of isbns) {
-     let book = books[isbn];
-     if (book["title"] == title) {
-         books_by_title[isbn] = book;
-     }
-    };
-    res.send(JSON.stringify(books_by_title, null, 4))
+    titlepromise.then(value => res.send(JSON.stringify(value, null, 4)));
 });
 
 //  Get book review
